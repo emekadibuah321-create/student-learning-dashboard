@@ -41,7 +41,7 @@ Sidebar, Card, Button, Badge, Avatar, Progress, Tabs, Table, Separator, Alert, S
 ## Getting started
 
 ```bash
-git clone https://github.com/<your-username>/student-learning-dashboard.git
+git clone https://github.com/<emekadibuah321-create!>/student-learning-dashboard.git
 cd student-learning-dashboard
 npm install
 npm run dev
