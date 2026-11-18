@@ -1,69 +1,137 @@
-import Image from "next/image";
+import Link from "next/link";
+import { BookOpen, CheckCheck, ClipboardList, TrendingUp } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatCard } from "@/components/stat-card";
+import { TopicStatusBadge } from "@/components/status-badge";
+import { assignments, student, topics } from "@/data";
+import { formatDate } from "@/lib/format";
 
-export default function Home() {
+export default function DashboardPage() {
+  const firstName = student.name.split(" ")[0];
+  const averageProgress = Math.round(topics.reduce((sum, t) => sum + t.progress, 0) / topics.length);
+  const completedAssignments = assignments.filter((a) => a.completed).length;
+  const recentTopics = [...topics].sort((a, b) => b.addedOn.localeCompare(a.addedOn)).slice(0, 3);
+  const upcoming = assignments
+    .filter((a) => !a.completed)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 4);
+  const categories = [...new Set(topics.map((t) => t.category))];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="space-y-8">
+      <section className="flex flex-col gap-6 rounded-xl bg-sidebar p-6 text-sidebar-foreground md:flex-row md:items-center md:justify-between md:p-8">
+        <div>
+          <h1 className="text-3xl font-semibold md:text-4xl">Welcome back, {firstName}</h1>
+          <p className="mt-2 max-w-md text-sidebar-foreground/80">
+            You are {averageProgress}% through your topics. Pick up where you left off.
           </p>
+          <Button asChild className="mt-4 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
+            <Link href="/assignments">Go to assignments</Link>
+          </Button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex items-center gap-4 rounded-lg bg-sidebar-accent p-4">
+          <Avatar className="size-14">
+            <AvatarFallback className="bg-sidebar-primary text-lg font-semibold text-sidebar-primary-foreground">
+              {student.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium">{student.name}</p>
+            <p className="text-sm text-sidebar-foreground/70">{student.email}</p>
+            <Badge className="mt-1.5 bg-sidebar-primary text-sidebar-primary-foreground">{student.cohort}</Badge>
+          </div>
         </div>
-      </main>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Learning topics" value={topics.length} description="Across 5 categories" icon={BookOpen} />
+        <StatCard title="Assignments" value={assignments.length} description="Set this term" icon={ClipboardList} />
+        <StatCard
+          title="Assignments done"
+          value={`${completedAssignments}/${assignments.length}`}
+          description="Marked as completed"
+          icon={CheckCheck}
+        />
+        <StatCard title="Average progress" value={`${averageProgress}%`} description="Across all topics" icon={TrendingUp} />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Recently added topics</CardTitle>
+            <CardDescription>The newest material on your syllabus.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentTopics.map((topic, index) => (
+              <div key={topic.id}>
+                {index > 0 && <Separator className="my-4" />}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-medium">{topic.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {topic.category} · added {formatDate(topic.addedOn)}
+                    </p>
+                  </div>
+                  <TopicStatusBadge status={topic.status} />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Learning progress</CardTitle>
+            <CardDescription>Average completion by category.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {categories.map((category) => {
+              const group = topics.filter((t) => t.category === category);
+              const value = Math.round(group.reduce((s, t) => s + t.progress, 0) / group.length);
+              return (
+                <div key={category}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>{category}</span>
+                    <span className="text-muted-foreground">{value}%</span>
+                  </div>
+                  <Progress value={value} />
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-serif text-xl">Upcoming deadlines</CardTitle>
+          <CardDescription>Your next pending assignments, soonest first.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Assignment</TableHead>
+                <TableHead className="text-right">Due</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {upcoming.map((a) => (
+                <TableRow key={a.id}>
+                  <TableCell className="font-medium">{a.title}</TableCell>
+                  <TableCell className="text-right">{formatDate(a.dueDate)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
